@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parahyangan Snack</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,300;0,400;0,700;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <!-- Style -->
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Alpine Js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="src/app.js" async></script>
+
+    <!--Midtrans-->
+    <script type="text/javascript"
+      src="https://app.sandbox.midtrans.com/snap/snap.js"
+      data-client-key="SB-Mid-client-dcmotEm5BffktSNm"></script>
+  </head>
+
+  <body>
+
+
+    <!-- Navbar start -->
+    <nav class="navbar" x-data>
+      <a href="#" class="navbar-logo">PARAHYANGAN</a>
+
+      <div class="navbar-nav">
+        <a href="#home">Home</a>
+        <a href="#about">Tentang Kami</a>
+        <a href="#menu">Produk&nbsp;Unggulan</a>
+        <a href="#products">Menu</a>
+        <a href="#contact">Kontak</a>
+      </div>
+
+      <div class="navbar-extra">
+        <a href="#" id="search-button"><i data-feather="search"></i></a>
+        <a href="#" id="shopping-cart-button"
+          ><i data-feather="shopping-cart"></i>
+       <span class="quantity-badge" x-show="$store.cart.quantity" x-text="$store.cart.quantity"></span>
+      </a>
+        <a href="#" id="hamburger-menu"><i data-feather="menu"></i></a>
+      </div>
+
+      <!-- Search Form start -->
+      <div class="search-form" 
+      x-data="{
+          search: '',
+          items: ['Basreng Bawang', 'Basreng Pedas', 'Basreng Pedas Daun Jeruk', 'Batagor Bawang', 'Batagor Pedas', 'Batagor Pedas Daun Jeruk', 'Makaroni Bawang', 'Makaroni Pedas', 'Makaroni Pedas Daun Jeruk', 'Seblak Bawang', 'Seblak Pedas', 'Seblak Pedas Daun Jeruk', 'Usus Bawang Daun Jeruk', 'Usus Pedas Daun Jeruk', 'Basreng Karedok Pedas Biasa', 'Basreng Karedok Pedas Luar Biasa'],
+          getFilteredItems(search) {
+              if (!search) return [];
+              const searchTerms = search.split(' ').filter(term => term.trim() !== '');
+              if (searchTerms.length === 0) return [];
+              return this.items.filter(item => {
+                  for (let i = 0; i < searchTerms.length; i++) {
+                      if (item.toLowerCase().includes(searchTerms[i].toLowerCase())) {
+                          return true;
+                      }
+                  }
+                  return false;
+              });
+          },
+          navigateToProducts(item) {
+              if (!item) return;
+              // Cari indeks item yang sesuai di dalam 'items'
+              const index = this.items.findIndex(i => i.toLowerCase() === item.toLowerCase());
+              if (index === -1) return; // Jika tidak ada item yang cocok, keluar dari fungsi
+              // Scroll ke kartu produk yang sesuai berdasarkan indeks
+              document.getElementById('product_' + index).scrollIntoView({ behavior: 'smooth' });
+          }
+      }"
+  >
+      <div>
+          <input type="search" id="search-box" x-model="search" @input="navigateToProducts(search)" placeholder="Search Menu...">
+      </div>
+      <div>
+          <ul>
+              <template x-for="(item, index) in getFilteredItems(search)" :key="index">
+                  <li x-text="item" @click="navigateToProducts(item)"></li>
+              </template>
+          </ul>
+      </div>
+  </div> 
+<!-- Search Form end -->
+
+      <!-- Shopping Cart start -->
+      <div class="shopping-cart">
+        <template x-for="(item, index) in $store.cart.items" x-keys="index">
+        <div class="cart-item">
+          <img :src="`img/products/${item.img}`" :alt="item.name" />
+          <div class="item-detail">
+            <h3 x-text="item.name"></h3>
+            <div class="item-price">
+              <span x-text="rupiah(item.price)"></span> &times;
+              <button id="remove" @click="$store.cart.remove(item.id)">&minus;</button>
+              <span x-text="item.quantity"></span>
+              <button id="add" @click="$store.cart.add(item)">&plus;</button> &equals;
+              <span x-text="rupiah(item.total)"></span>
+            </div>
+          </div>
+         
+        </div>
+      </template>
+      <h4 x-show="!$store.cart.items.length" style="margin-top: 1rem;">Keranjang kamu masih kosong nih</h4>
+      <h4 x-show="$store.cart.items.length">Total : <span x-text="rupiah($store.cart.total)"></span></h4>
+
+      <div class="form-container" x-show="$store.cart.items.length">
+        <form action="" id="checkout-form">
+          <input type="hidden" name="items" x-model="JSON.stringify($store.cart.items)">
+          <input type="hidden" name="total" x-model="$store.cart.total">
+          <h5>Customer Detail</h5>
+
+
+          <label for="name">
+            <span>Name</span>
+            <input type="text" name="name" id="name">
+          </label>
+          <label for="address">
+            <span>Address</span>
+            <input type="text" name="address" id="address" style="margin-right: 5px;">
+          </label>
+          <label for="phone">
+            <span>Phone</span>
+            <input type="number" name="phone" id="phone">
+          </label>
+      
+
+          <button class="checkout-button disabled" type="submit" id="checkout-button" value="checkout">Checkout</button>
+        </form>
+      </div>
+
+      </div>
+      <!-- Shopping Cart end -->
+    </nav>
+    <!-- Navbar end -->
+
+    <!-- Hero Section start -->
+    <section class="slider" id="home">
+      <figure>
+        <img src="img/obp_py2.jpg">
+        <img src="img/obp_basreng5.jpg">
+      </figure>
+    </section> 
+    <!-- Hero Section end -->
+
+    <!-- About Section start -->
+    <section id="about" class="about">
+      <div class="container-about" style="background-color: rgb(4, 175, 175); padding-top: 50px; padding-bottom: 50px; padding-right: 50px; padding-left: 10px; border-radius: 16px; border: 1px solid grey">
+      <div class="row" >
+        <div class="content">
+          <h3>Parahyangan Snack</h3>
+          <p style="font-weight:inherit; color: #545655;">
+            Toko Parahyangan dibangun berdasarkan gagasan Ruri Nuriah yang terinspirasi oleh keragaman oleh-oleh khas Kota Bandung, termasuk Basreng Parahyangan yang sangat terkenal di kota tersebut.
+          </p>
+          <p style="font-weight:inherit; color: #545655;">
+            Nama Parahyangan Snack diciptakan karena lokasinya berada di Jawa Barat, serta produksinya terletak di Padalarang, tepatnya di Kota Baru Parahyangan.
+          </p>
+        </div>
+        <video controls loop width="50%" height="20%">
+          <source src="video/basreng2.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+    </section> <br> <br> <br> <br>
+    <!-- About Section end -->
+
+    <div class="container">
+
+      <h1 class="heading">Layanan Kami</h1> <br>
+  
+      <div class="box-container">
+  
+          <div class="box">
+              <img src="img/eat.png" alt="">
+              <h3>Pilih Menu</h3>
+              <p>Temukan dan pilih menu yang kami sediakan!</p>
+              
+          </div>
+  
+          <div class="box">
+              <img src="img/pay.png" alt="">
+              <h3>Pembayaran</h3>
+              <p>Pembayaran hanya dapat dilakukan melalui e-wallet</p>
+            
+          </div>
+  
+          <div class="box">
+              <img src="img/deliver.png" alt="">
+              <h3>Pengantaran</h3>
+              <p>Menu yang telah berhasil ditransaksi, akan segera dikirim!</p>
+             
+          </div>
+      </div>
+    </div>
+
+    <!-- Menu Section start -->
+    <section id="menu" class="menu" style="background-color: rgb(4, 175, 175);">
+      <h2>Produk Unggulan</h2>
+      <p style="font-weight:inherit; color: #545655;">
+        Berikut merupakan produk-produk unggulan yang paling laris dari banyaknya menu yang kami miliki!
+      </p>
+
+      <div class="row">
+        <div class="menu-card">
+          <img src="img/menu/basreng_m.jpg" alt="Espresso" class="menu-card-img" />
+          <h3 class="menu-card-title">- Basreng -</h3>
+          <p class="menu-card-price" style="font-weight:inherit;">Rp 15.000</p>
+        </div>
+        <div class="menu-card">
+          <img src="img/menu/batagor_m.jpg" alt="Espresso" class="menu-card-img" />
+          <h3 class="menu-card-title">- Batagor -</h3>
+          <p class="menu-card-price" style="font-weight:inherit;">Rp 15.000</p>
+        </div>
+        <div class="menu-card">
+          <img src="img/menu/seblak_m.jpg" alt="Espresso" class="menu-card-img" />
+          <h3 class="menu-card-title">- Seblak -</h3>
+          <p class="menu-card-price" style="font-weight:inherit;">Rp 15.000</p>
+        </div>
+        
+      </div>
+    </section>
+    <!-- Menu Section end -->
+
+    <!-- Products Section start -->
+    <section class="products" id="products" x-data="products">
+      <h2>Menu Kami</h2>
+      <p style="font-weight:inherit; color: grey;">
+        Ayo coba menu-menu yang kami sediakan! Banyak variasi rasa dan harga-nya sangat terjangkau!
+      </p>
+
+      <div class="row">
+        <template x-for="(item, index) in items" :key="index">
+          <div class="product-card" x-bind:id="'product_' + index">
+            <div class="product-icons">
+              <a href="#" @click.prevent="$store.cart.add(item)">
+                <svg
+                 width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+                            
+                  <use href="img/feather-sprite.svg#shopping-cart" />
+                </svg>
+              </a>
+              <a href="detail.html" class="item-detail-button"
+                ><svg
+                width="24"
+                 height="24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                           
+                 <use href="img/feather-sprite.svg#eye" />
+               </svg></a>
+            </div>
+            <div class="product-image">
+              <img :src="`img/products/${item.img}`" :alt="item.name">
+            </div>
+            <div class="product-content">
+              <h3 x-text="item.name"></h3>
+              <div class="product-stars">
+                <svg
+                width="24"
+                 height="24"
+                 fill="currentColor"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                 
+                           
+                 <use href="img/feather-sprite.svg#star" />
+               </svg>
+               <svg
+               width="24"
+                height="24"
+                fill="currentColor"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+                          
+                <use href="img/feather-sprite.svg#star" />
+              </svg>
+              <svg
+              width="24"
+               height="24"
+               fill="currentColor"
+               stroke="currentColor"
+               stroke-width="2"
+               stroke-linecap="round"
+               stroke-linejoin="round">
+                         
+               <use href="img/feather-sprite.svg#star" />
+             </svg>
+             <svg
+             width="24"
+              height="24"
+              fill="currentColor"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+                        
+              <use href="img/feather-sprite.svg#star" />
+            </svg>
+            <svg
+            width="24"
+             height="24"
+             fill="currentColor"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+                       
+             <use href="img/feather-sprite.svg#star" />
+           </svg>
+              </div>
+              <div class="product-price"><span x-text="rupiah(item.price)"></span></div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>  
+    <!-- Products Section end -->
+
+     <!-- Contact Section start -->
+    <section id="contact" class="contact section-bg">
+    <div class="container-cntc">
+    <div class="section-title">
+      <h2>Kontak Kami</h2>
+      <p style="font-weight:inherit; color: grey;">Berikut merupakan kontak yang kami sediakan jika terdapat kendala yang ingin ditanyakan</p>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+
+      <div class="col-lg-10">
+
+        <div class="info-wrap" style="padding-right: 25px; padding-left: 112px;">
+          <div class="row" >
+            <div class="col-lg-4 info">
+              <i class="fa fa-map-marker"></i>
+              <h4>Location:</h4>
+              <p style="margin-right: 16px; align-items: left;">Jl.Candra Agung No.8</p>
+              <p>Kota Baru Parahyangan</p>
+            </div>
+
+            <div class="col-lg-4 info mt-4 mt-lg-0">
+              <i class="fa fa-envelope"></i>
+              <h4>Email:</h4>
+              <p>sisiysisiy16@gmail.com<br>smeidyta@gmail.com</p>
+            </div>
+
+            <div class="col-lg-4 info mt-4 mt-lg-0">
+              <i class="fa fa-phone"></i>
+              <h4>Phone:</h4>
+              <p style="margin-right: 38px;">+62 811-231-118</p> 
+              <p>+62 819-1055-8449</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+     <!-- Contact Section end -->
+    <!-- Footer start -->
+    <footer>
+
+
+      <div class="links">
+        <a href="#home">Home</a>
+        <a href="#about">Tentang Kami</a>
+        <a href="#menu">Menu</a>
+        <a href="#contact">Kontak</a>
+      </div>
+
+      <div class="credit">
+        <p>Created by <a href="">Shinta Meidyta Putri</a>. | &copy; 2024.</p>
+      </div>
+    </footer>
+    <!-- Footer end -->
+
+  
+
+    <!-- Feather Icons -->
+    <script>
+      feather.replace();
+    </script>
+
+    <!-- Javascript -->
+    <script src="js/script.js"></script>
+    <script src="js/script2.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
